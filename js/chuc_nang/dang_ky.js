@@ -9,6 +9,7 @@
 //     id:    "ma-tran-ke",                 // tên không trùng (bắt buộc)
 //     ten:   "Ma trận kề",                 // tiêu đề nhóm nút ở khung Điều khiển (bỏ trống = không hiện nhóm nút)
 //     mota:  "Hiện ma trận kề của đồ thị", // dòng giải thích nhỏ dưới tiêu đề (tùy chọn)
+//     truong:[ { id: "oXuatPhat", nhan: "Đỉnh xuất phát", placeholder: "bỏ trống = tự chọn" } ],   // ô nhập (tùy chọn)
 //     nut:   [ { nhan: "Tính", chay: () => {...}, kieu: "success" } ],   // các nút (kieu: success | info | danger | bỏ trống)
 //     html:  () => "<h3>Ma trận kề</h3>…", // trả về HTML hiện ở khung Thông tin (tùy chọn)
 //     reset: () => {...},                  // gọi khi đồ thị bị sửa / reset: xóa kết quả cũ (tùy chọn)
@@ -33,9 +34,15 @@ function veNutChucNang() {
     const kv = $("chucNangDieuKhien");
     if (!kv) return;
     kv.innerHTML = "";
-    DS_CHUC_NANG.filter(c => c.ten || (c.nut && c.nut.length)).forEach(c => {
+    DS_CHUC_NANG.filter(c => c.ten || (c.nut && c.nut.length) || (c.truong && c.truong.length)).forEach(c => {
         if (c.ten) { const h = document.createElement("h3"); h.textContent = c.ten; kv.appendChild(h); }
         if (c.mota) { const d = document.createElement("div"); d.className = "note hint"; d.textContent = c.mota; kv.appendChild(d); }
+        (c.truong || []).forEach(t => {
+            const lb = document.createElement("label"); lb.textContent = t.nhan + ":"; kv.appendChild(lb);
+            const inp = document.createElement("input");
+            inp.type = "text"; inp.autocomplete = "off"; inp.id = t.id; inp.placeholder = t.placeholder || "";
+            kv.appendChild(inp);
+        });
         (c.nut || []).forEach(b => {
             const btn = document.createElement("button");
             if (b.kieu) btn.className = b.kieu;
@@ -70,7 +77,7 @@ function hienThiThongTin() {
     const phan = DS_CHUC_NANG.filter(c => c.html).map(c => c.html()).join("");
     $("thongTin").innerHTML =
         `<div class="note hint"><b>Đồ thị:</b> ${n} đỉnh, ${edges.length} cạnh.</div>` +
-        (phan || '<div class="note hint"><i>Chưa có chức năng nào. Thêm file trong js/chuc_nang/ rồi gọi dangKyChucNang(...).</i></div>');
+        (phan || (DS_CHUC_NANG.length ? '<div class="note hint"><i>Chọn một chức năng ở khung Điều khiển để xem kết quả tại đây.</i></div>' : ""));
     document.querySelectorAll("#thongTin details[data-key]").forEach(d => { if (dangMo.has(d.dataset.key)) d.open = true; });
     if (typeof luuTuDong === "function") luuTuDong();   // tự động lưu (luu_tru.js)
 }
