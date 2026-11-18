@@ -37,6 +37,16 @@
                     <button class="danger" onclick="resetDoThi()">↺ Reset</button>
                 </div>
                 <div class="save-status" id="luuTrangThai">Đồ thị được tự động lưu</div>
+
+                <!-- [Mục] Phiên đồ thị (luu_tru.js): mỗi phiên là 1 đồ thị riêng, bấm vào phiên nào thì đồ thị đó hiện ra -->
+                <h3>🗂️ Phiên đồ thị</h3>
+                <div class="phien-list" id="danhSachPhien"></div>
+                <div class="phien-btns">
+                    <button class="success" onclick="phienMoi()">➕ Phiên mới</button>
+                    <button class="info" onclick="doiTenPhien()">✏️ Đổi tên</button>
+                    <button class="danger" onclick="xoaPhien()">🗑️ Xóa</button>
+                </div>
+                <hr>
                 <label>Loại đồ thị:</label>
                 <select id="loai" onchange="hienThiThongTin()"></select>
 
@@ -132,9 +142,12 @@
     <script src="js/loi/ve_do_thi.js"></script>
     <script src="js/loi/luu_tru.js"></script>
 
-    <!-- ===== THÊM CHỨC NĂNG MỚI: dán dòng <script> của file mới vào đây (trước chinh.js) =====
-    <script src="js/chuc_nang/ten_chuc_nang.js"></script>
-    -->
+    <!-- Chức năng phần 2.2 - 2.4 -->
+    <script src="js/chuc_nang/chu_trinh_euler.js"></script>
+    <script src="js/chuc_nang/nguoi_dua_thu.js"></script>
+    <script src="js/chuc_nang/prim.js"></script>
+    <script src="js/chuc_nang/giai_thich.js"></script>
+
     <script src="js/chinh.js"></script>   <!-- khởi động: khôi phục dữ liệu đã lưu (nạp sau cùng) -->
 
     <!-- ===== HIỆU ỨNG NỀN: phi kiếm bay (chỉ trang trí, không liên quan đồ thị) ===== -->
