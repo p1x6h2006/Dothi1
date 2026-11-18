@@ -1,0 +1,52 @@
+// =====================================================
+// CẤU HÌNH: tham chiếu DOM, tên 5 loại đồ thị, bảng màu 3 theme
+// =====================================================
+const $ = id => document.getElementById(id);
+const svg = $("svg");
+const NS = "http://www.w3.org/2000/svg";
+
+// -----------------------------------------------------
+// 5 LOẠI ĐỒ THỊ (giá trị loai = 1..5, dùng xuyên suốt các file)
+//   loai 1 | Đơn đồ thị vô hướng : KHÔNG vòng khuyên, KHÔNG cạnh song song, cạnh không mũi tên
+//   loai 2 | Đa đồ thị vô hướng  : cho phép cạnh song song, KHÔNG vòng khuyên
+//   loai 3 | Giả đồ thị vô hướng : cho phép cạnh song song VÀ vòng khuyên
+//   loai 4 | Đơn đồ thị có hướng : KHÔNG vòng khuyên, mỗi cặp (x→y) chỉ 1 cạnh, có mũi tên
+//   loai 5 | Đa đồ thị có hướng  : cho phép cạnh song song (x→y), KHÔNG vòng khuyên, có mũi tên
+// Tìm nhanh: gõ "loai ===" hoặc "coHuong()" để thấy chỗ xử lý riêng từng loại.
+// -----------------------------------------------------
+const TEN_LOAI = ["Đơn đồ thị vô hướng", "Đa đồ thị vô hướng", "Giả đồ thị vô hướng", "Đơn đồ thị có hướng", "Đa đồ thị có hướng"];
+const EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+const PALETTES = {
+    light:   { node: "#60a5fa", border: "#0f172a", edge: "#2563eb", glow: "#93c5fd" },
+    dark:    { node: "#22d3ee", border: "#e2e8f0", edge: "#8b5cf6", glow: "#c084fc" },
+    premium: { node: "#fbbf24", border: "#f8fafc", edge: "#38bdf8", glow: "#facc15" }
+};
+const COLOR_INPUTS = { node: "nodeColor", border: "nodeBorderColor", edge: "edgeColor", glow: "edgeGlowColor" };
+const MAU_NOI_BAT = "#f59e0b";   // màu viền đỉnh nổi bật (dinhNoiBat)
+
+// -----------------------------------------------------
+// KIỂU NHÃN ĐỈNH / CẠNH: "so" (0, 1, 2, …) hoặc "chu" (A, B, C, …, Z, AA, AB, …)
+//   Chỉ đổi cách HIỂN THỊ; bên trong đồ thị luôn lưu số 0..n-1.
+//   Nhãn cạnh (x,y) hiện theo nhãn của hai đỉnh nên đổi theo: (0,1) <-> (A,B).
+//   Đổi bằng nút "Nhãn số / Nhãn chữ" (chonKieuNhan trong doi_giao_dien.js).
+// -----------------------------------------------------
+let kieuNhan = "so";
+const chuCai = i => {                       // 0->A, 25->Z, 26->AA, 27->AB, …
+    let s = "";
+    i = Number(i);
+    do { s = String.fromCharCode(65 + i % 26) + s; i = Math.floor(i / 26) - 1; } while (i >= 0);
+    return s;
+};
+const nhanDinh = i => kieuNhan === "chu" ? chuCai(i) : String(i);
+
+// Đọc đỉnh người dùng nhập: nhận cả số ("3") lẫn chữ ("d"/"D") ở mọi chế độ; sai -> NaN
+function docDinh(v) {
+    const t = String(v === undefined || v === null ? "" : v).trim();
+    if (/^\d+$/.test(t)) return parseInt(t, 10);
+    if (/^[a-zA-Z]+$/.test(t)) {
+        let x = 0;
+        for (const ch of t.toLowerCase()) x = x * 26 + (ch.charCodeAt(0) - 96);
+        return x - 1;
+    }
+    return NaN;
+}

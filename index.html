@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mô phỏng đồ thị</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2214%22%20fill=%22%230f172a%22/%3E%3Cg%20stroke=%22%2360a5fa%22%20stroke-width=%224%22%20stroke-linecap=%22round%22%3E%3Cline%20x1=%2216%22%20y1=%2218%22%20x2=%2248%22%20y2=%2216%22/%3E%3Cline%20x1=%2216%22%20y1=%2218%22%20x2=%2232%22%20y2=%2248%22/%3E%3Cline%20x1=%2248%22%20y1=%2216%22%20x2=%2232%22%20y2=%2248%22/%3E%3C/g%3E%3Cg%20fill=%22%23fbbf24%22%20stroke=%22%23f8fafc%22%20stroke-width=%222.5%22%3E%3Ccircle%20cx=%2216%22%20cy=%2218%22%20r=%227%22/%3E%3Ccircle%20cx=%2248%22%20cy=%2216%22%20r=%227%22/%3E%3Ccircle%20cx=%2232%22%20cy=%2248%22%20r=%227%22/%3E%3C/g%3E%3C/svg%3E">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- ===== MÀN HÌNH 1: CHỌN LOẠI ĐỒ THỊ (5 nút do js/giao_dien/doi_giao_dien.js tạo vào #loaiGrid) ===== -->
+    <div id="chonLoai">
+        <div class="chon-box">
+            <h2> MÔ PHỎNG ĐỒ THỊ</h2>
+            <p class="chon-mo-ta">Hãy chọn loại đồ thị để bắt đầu</p>
+            <p class="chon-sub">Nhập dữ liệu và quan sát đồ thị trực quan ngay trên trình duyệt</p>
+            <div class="loai-grid" id="loaiGrid"></div>
+        </div>
+    </div>
+
+    <!-- ===== MÀN HÌNH 2: MÀN HÌNH CHÍNH (hiện sau khi chọn loại) ===== -->
+    <div id="manHinhChinh">
+        <h1> MÔ PHỎNG ĐỒ THỊ</h1>
+        <div class="selected-type">
+            Đang chọn: <span id="loaiDangChon">Chưa chọn</span>
+        </div>
+        <div class="container">
+            <!-- ---- CỘT TRÁI: KHUNG ĐIỀU KHIỂN ---- -->
+            <div class="control">
+                <h2> Điều khiển</h2>
+
+                <!-- [Mục] Lưu / Reset (luu_tru.js): đồ thị tự động lưu; Reset để về ban đầu -->
+                <div class="save-row">
+                    <button class="success" onclick="luuNgay(true)">💾 Lưu</button>
+                    <button class="danger" onclick="resetDoThi()">↺ Reset</button>
+                </div>
+                <div class="save-status" id="luuTrangThai">Đồ thị được tự động lưu</div>
+                <label>Loại đồ thị:</label>
+                <select id="loai" onchange="hienThiThongTin()"></select>
+
+                <!-- [Mục] Đổi giao diện: Light / Premium / Neon (chonGiaoDien trong doi_giao_dien.js) -->
+                <div class="theme-switch">
+                    <button class="theme-btn active" id="lightThemeBtn" onclick="chonGiaoDien('light')">☀️ Light</button>
+                    <button class="theme-btn" id="premiumThemeBtn" onclick="chonGiaoDien('premium')">✨ Premium</button>
+                    <button class="theme-btn" id="darkThemeBtn" onclick="chonGiaoDien('dark')">🌙 Neon</button>
+                </div>
+
+                <!-- [Mục] Kiểu nhãn đỉnh/cạnh: Số (0,1,2…) hoặc Chữ (a,b,c…) (chonKieuNhan trong doi_giao_dien.js) -->
+                <div class="theme-switch label-switch">
+                    <button class="theme-btn active" id="soNhanBtn" onclick="chonKieuNhan('so')">🔢 Nhãn số</button>
+                    <button class="theme-btn" id="chuNhanBtn" onclick="chonKieuNhan('chu')">🔤 Nhãn chữ</button>
+                </div>
+                <div class="note hint" id="goiYNhan">Cạnh hiện dạng (0,1) · (2,3)…</div>
+
+                <!-- [Mục] Chọn màu đỉnh, cạnh, viền, glow (apDungMauDoThi trong doi_giao_dien.js) -->
+                <div class="color-row">
+                    <div class="color-box"><label for="nodeColor">Màu đỉnh</label><input type="color" id="nodeColor" value="#60a5fa"></div>
+                    <div class="color-box"><label for="edgeColor">Màu cạnh</label><input type="color" id="edgeColor" value="#2563eb"></div>
+                </div>
+                <div class="color-row">
+                    <div class="color-box"><label for="nodeBorderColor">Viền đỉnh</label><input type="color" id="nodeBorderColor" value="#0f172a"></div>
+                    <div class="color-box"><label for="edgeGlowColor">Glow cạnh</label><input type="color" id="edgeGlowColor" value="#93c5fd"></div>
+                </div>
+                <button class="info" onclick="apDungMauDoThi()" style="margin-top: 12px;">🎨 Áp dụng màu đồ thị</button>
+
+                <!-- [Mục] Tạo đồ thị mới: nhập số đỉnh, số cạnh (taoDoThi trong chinh_sua_canh.js) -->
+                <label>Số đỉnh:</label>
+                <input type="number" id="soDinh" min="1" value="5">
+                <label>Số cạnh:</label>
+                <input type="number" id="soCanh" min="0" value="5">
+                <button onclick="taoDoThi()">Tạo đồ thị</button>
+                <div class="note tip">
+                    Hướng dẫn: nhập cạnh dạng x y hoặc x y w (w là trọng số), đỉnh từ 0 đến n−1 (hoặc A, B, C… tương ứng). Nhập số hay chữ đều được.
+                </div>
+                <hr>
+
+                <!-- [Mục] Thêm cạnh (themCanh) -->
+                <h3>➕ Thêm cạnh</h3>
+                <input type="text" autocomplete="off" id="themX" placeholder="Đỉnh x">
+                <input type="text" autocomplete="off" id="themY" placeholder="Đỉnh y">
+                <input type="number" id="themW" step="any" placeholder="Trọng số w (có thể bỏ trống)">
+                <button class="success" onclick="themCanh()">Thêm cạnh</button>
+                <div class="note hint">Ví dụ: 0 1 (hoặc A B) để nối đỉnh 0 (A) với đỉnh 1 (B).</div>
+
+                <!-- [Mục] Xóa cạnh (xoaCanh) -->
+                <h3>🗑️ Xóa cạnh</h3>
+                <input type="text" autocomplete="off" id="xoaX" placeholder="Đỉnh x">
+                <input type="text" autocomplete="off" id="xoaY" placeholder="Đỉnh y">
+                <button class="danger" onclick="xoaCanh()">Xóa cạnh</button>
+
+                <!-- [Mục] Sửa cạnh (suaCanh) -->
+                <h3>✏️ Sửa cạnh</h3>
+                <input type="text" autocomplete="off" id="cuX" placeholder="Đỉnh x cũ">
+                <input type="text" autocomplete="off" id="cuY" placeholder="Đỉnh y cũ">
+                <input type="text" autocomplete="off" id="moiX" placeholder="Đỉnh x mới">
+                <input type="text" autocomplete="off" id="moiY" placeholder="Đỉnh y mới">
+                <input type="number" id="moiW" step="any" placeholder="Trọng số mới (bỏ trống = giữ cũ)">
+                <button onclick="suaCanh()">Sửa cạnh</button>
+
+                <button class="info" onclick="sapXep()">🔄 Sắp xếp lại</button>
+                <hr>
+
+                <!-- [Mục] CHỨC NĂNG (cô giao câu nào thì thêm câu đó): nút do js/chuc_nang/dang_ky.js tự vẽ vào đây.
+                     Cách thêm: tạo file js/chuc_nang/<ten>.js, gọi dangKyChucNang({...}), rồi thêm <script> bên dưới. -->
+                <div id="chucNangDieuKhien"></div>
+            </div>
+
+            <!-- ---- CỘT GIỮA: VÙNG ĐỒ THỊ ----
+                 svg = hình vẽ đồ thị (ve_do_thi.js) -->
+            <div class="graph-area">
+                <svg id="svg"></svg>
+                <div class="note foot">Có thể kéo trực tiếp các đỉnh trên màn hình.</div>
+            </div>
+
+            <!-- ---- CỘT PHẢI: KHUNG THÔNG TIN (cuộn độc lập) ----
+                 #thongTin = kết quả của các chức năng đã đăng ký (js/chuc_nang/dang_ky.js) -->
+            <div class="info-area">
+                <div id="thongTin">Chưa có đồ thị</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NẠP SCRIPT (KHÔNG ĐỔI THỨ TỰ): cau_hinh -> trang_thai -> kiem_tra -> dang_ky -> doi_giao_dien -> chinh_sua_canh -> ve_do_thi -> luu_tru -> [file chức năng của bạn] -> chinh ===== -->
+    <script src="js/dung_chung/cau_hinh.js"></script>
+    <script src="js/dung_chung/trang_thai.js"></script>
+    <script src="js/dung_chung/kiem_tra.js"></script>
+    <script src="js/chuc_nang/dang_ky.js"></script>
+    <script src="js/giao_dien/doi_giao_dien.js"></script>
+    <script src="js/loi/chinh_sua_canh.js"></script>
+    <script src="js/loi/ve_do_thi.js"></script>
+    <script src="js/loi/luu_tru.js"></script>
+
+    <!-- ===== THÊM CHỨC NĂNG MỚI: dán dòng <script> của file mới vào đây (trước chinh.js) =====
+    <script src="js/chuc_nang/ten_chuc_nang.js"></script>
+    -->
+    <script src="js/chinh.js"></script>   <!-- khởi động: khôi phục dữ liệu đã lưu (nạp sau cùng) -->
+
+    <!-- ===== HIỆU ỨNG NỀN: phi kiếm bay (chỉ trang trí, không liên quan đồ thị) ===== -->
+    <!-- Nền: 8 thanh phi kiếm (màn chọn loại) + 4 thanh bay ngang (màn chính); gốc: 12 (cùng kiểu kiếm của Luu_Tru_Ca_Nhan), 6 màu, bay phía sau, xuyên qua lớp kính mờ của khung đồ thị -->
+    <canvas id="swordBg" aria-hidden="true" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:-1;pointer-events:none"></canvas>
+    <script src="js/giao_dien/hieu_ung_phi_kiem.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+// =====================================================
+// VÍ DỤ MẪU: 1 chức năng "Đếm bậc đỉnh" + tô màu cạnh trên hình
+// Cách chạy thử: đổi tên file thành vi_du_mau.js, rồi thêm vào index.html (trước chinh.js):
+//     <script src="js/chuc_nang/vi_du_mau.js"></script>
+// Khi làm câu thật: copy file này, đổi id / ten, viết thuật toán vào hàm chay.
+// =====================================================
+(function () {
+    let ketQua = null;   // kết quả giữ lại để hiện ở khung Thông tin
+
+    function tinhBac() {
+        const deg = Array(n).fill(0);
+        edges.forEach(e => { if (e.x === e.y) deg[e.x] += 2; else { deg[e.x]++; deg[e.y]++; } });
+        ketQua = deg;
+
+        // Tô cạnh đầu tiên để thử hiệu ứng màu trên hình
+        toMauCanh = edges.length ? { 0: { mau: "#16a34a", dayNet: 6, tienTo: "★ " } } : {};
+        thongBaoHinh = "Đã tính bậc của " + n + " đỉnh.";
+        veDoThi();
+        hienThiThongTin();
+    }
+
+    dangKyChucNang({
+        id: "vi-du-bac",
+        ten: "📊 Ví dụ: bậc đỉnh",
+        mota: "Chức năng mẫu để biết cách cắm câu mới vào.",
+        nut: [{ nhan: "Tính bậc", chay: tinhBac, kieu: "success" }],
+        html: () => ketQua ? "<h3>Bậc của đỉnh</h3>" + ketQua.map((d, i) => `deg(${nhanDinh(i)}) = ${d}`).join("<br>") : "",
+        reset: () => { ketQua = null; }
+    });
+})();
