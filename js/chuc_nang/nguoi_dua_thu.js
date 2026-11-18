@@ -71,60 +71,27 @@
         return { le, sumW, cap, mG, dem, ds, vs: h.vs, es: h.es, tong: sumW + mG };
     }
 
-    // Trả về chuỗi lỗi nếu không giải được, null nếu hợp lệ (dùng cả cho nút Euler)
-    function loiNguoiDuaThu() {
-        if (coHuong()) return "Bài toán người đưa thư ở đây chỉ hỗ trợ đồ thị vô hướng (loại 1–3).";
-        if (!edges.length) return "Đồ thị chưa có cạnh nào.";
-        if (edges.some(e => trongSo(e) < 0)) return "Có trọng số âm: không áp dụng được (cần trọng số ≥ 0).";
-        if (!lienThongCanh(edges)) return "Đồ thị không liên thông: có lặp cạnh cũng không đi hết được mọi cạnh.";
-        const deg = Array(n).fill(0);
-        edges.forEach(e => { if (e.x === e.y) deg[e.x] += 2; else { deg[e.x]++; deg[e.y]++; } });
-        if (deg.filter(d => d % 2 === 1).length > TOI_DA_LE) return `Quá nhiều đỉnh bậc lẻ (tối đa ${TOI_DA_LE}).`;
-        return null;
-    }
-
-    // Tô các cạnh phải lặp màu xanh lá, ghi "×số lần đi"
-    function toCanhLap(r) {
-        Object.keys(r.dem).forEach(id => { toMauCanh[id] = { mau: MAU_LAP, dayNet: 6, tienTo: `×${1 + r.dem[id]} ` }; });
-    }
-
     function chay() {
         resetChucNang();
         kq = null;
-        const loi = loiNguoiDuaThu();
-        if (loi) { kq = { loi }; return hienThiThongTin(); }
+        if (coHuong()) { kq = { loi: "Bài toán người đưa thư ở đây chỉ hỗ trợ đồ thị vô hướng (loại 1–3)." }; return hienThiThongTin(); }
+        if (!edges.length) { kq = { loi: "Đồ thị chưa có cạnh nào." }; return hienThiThongTin(); }
+        if (edges.some(e => trongSo(e) < 0)) { kq = { loi: "Có trọng số âm: không áp dụng được (cần trọng số ≥ 0)." }; return hienThiThongTin(); }
+        if (!lienThongCanh(edges)) { kq = { loi: "Đồ thị không liên thông: không có hành trình đi qua mọi cạnh." }; return hienThiThongTin(); }
+        const deg = Array(n).fill(0);
+        edges.forEach(e => { if (e.x === e.y) deg[e.x] += 2; else { deg[e.x]++; deg[e.y]++; } });
+        if (deg.filter(d => d % 2 === 1).length > TOI_DA_LE) { kq = { loi: `Quá nhiều đỉnh bậc lẻ (tối đa ${TOI_DA_LE}).` }; return hienThiThongTin(); }
         const start = docXuatPhat(dinhCoCanh()[0], true);
         if (start === null) return hienThiThongTin();
 
         kq = tinh(start);
         if (!kq.loi) {
-            toCanhLap(kq);
+            Object.keys(kq.dem).forEach(id => { toMauCanh[id] = { mau: MAU_LAP, dayNet: 6, tienTo: `×${1 + kq.dem[id]} ` }; });
             thongBaoHinh = `Người đưa thư: tổng trọng số = ${kq.tong}`;
         }
         veDoThi();
         hienThiThongTin();
     }
-
-    // Phần "cạnh lặp + hành trình + tổng" (dùng cho cả mục Người đưa thư và mục Euler)
-    function htmlHanhTrinh(r) {
-        let h = "";
-        if (r.cap.length) {
-            const lap = Object.keys(r.dem).map(id => `${nhanCanhNgan(id)}${r.dem[id] > 1 ? " ×" + r.dem[id] : ""}`);
-            h += `<div class="npt-step">Cạnh đi lặp (tô xanh lá trên hình): ${lap.join(", ")}.</div>`;
-        }
-        h += `<div class="npt-step"><b>Hành trình</b> (xuất phát từ ${nhanDinh(r.vs[0])}, ${r.es.length} lượt đi):</div>`;
-        h += htmlDay(r.vs, r.es, i => { const it = r.ds[r.es[i]]; return `e${it.goc + 1}${it.lap ? "*" : ""}`; });
-        h += `<div class="euler-line">${r.vs.map(nhanDinh).join(" → ")}</div>`;
-        h += '<div class="npt-path">Dấu * : lượt đi lặp lại của cạnh.</div>';
-        h += `<div class="npt-total">Tổng trọng số hành trình = Σw + m(G) = ${r.sumW} + ${r.mG} = ${r.tong}</div>`;
-        return h;
-    }
-
-    // Cho nút Euler dùng
-    window.loiNguoiDuaThu = loiNguoiDuaThu;
-    window.tinhNguoiDuaThu = tinh;
-    window.toCanhLapNguoiDuaThu = toCanhLap;
-    window.htmlHanhTrinhLap = htmlHanhTrinh;
 
     function html() {
         if (!kq) return "";
@@ -136,8 +103,15 @@
             h += '<div class="npt-step"><b>Bước 3.</b> Ghép cặp đỉnh lẻ sao cho tổng khoảng cách ngắn nhất nhỏ nhất (Floyd–Warshall):';
             kq.cap.forEach(c => { h += `<div class="npt-path">(${nhanDinh(c.a)}, ${nhanDinh(c.b)}): d = ${c.d}, đường đi ${c.p.map(nhanDinh).join(" → ")}</div>`; });
             h += `</div><div class="npt-m">m(G) = ${kq.mG} (tổng trọng số các cạnh phải đi lặp)</div>`;
+            const lap = Object.keys(kq.dem).map(id => `${nhanCanhNgan(id)}${kq.dem[id] > 1 ? " ×" + kq.dem[id] : ""}`);
+            h += `<div class="npt-step">Cạnh đi lặp (tô xanh lá trên hình): ${lap.join(", ")}.</div>`;
         }
-        h += htmlHanhTrinh(kq);
+        h += `<div class="npt-step"><b>Hành trình</b> (xuất phát từ ${nhanDinh(kq.vs[0])}, ${kq.es.length} lượt đi):</div>`;
+        const danhDau = i => { const it = kq.ds[kq.es[i]]; const lap = it.lap || false; return `e${it.goc + 1}${lap ? "*" : ""}`; };
+        h += htmlDay(kq.vs, kq.es, danhDau);
+        h += `<div class="euler-line">${kq.vs.map(nhanDinh).join(" → ")}</div>`;
+        h += '<div class="npt-path">Dấu * : lượt đi lặp lại của cạnh.</div>';
+        h += `<div class="npt-total">Tổng trọng số hành trình = Σw + m(G) = ${kq.sumW} + ${kq.mG} = ${kq.tong}</div>`;
         return h + "</div>";
     }
 

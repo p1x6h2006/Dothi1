@@ -6,7 +6,6 @@
 //   Vô hướng (loai 1-3): các cạnh cùng một thành phần liên thông VÀ mọi đỉnh có bậc chẵn (vòng khuyên tính bậc 2).
 //   Có hướng (loai 4-5): liên thông yếu VÀ mọi đỉnh có deg⁺ = deg⁻.
 // Tìm chu trình: thuật toán Hierholzer.
-// Khi vô hướng, liên thông nhưng có đỉnh bậc lẻ: dùng tinhNguoiDuaThu (nguoi_dua_thu.js) để lặp cạnh cho có chu trình Euler.
 // File này cũng chứa các hàm dùng chung cho nguoi_dua_thu.js: trongSo, hierholzer, lienThongCanh, docXuatPhat.
 
 const trongSo = e => e.w === undefined ? 1 : e.w;   // cạnh không nhập trọng số tính w = 1
@@ -103,20 +102,7 @@ function htmlDay(vs, es, moc) {
                 h.es.forEach((k, i) => { toMauCanh[k] = { mau: MAU_EULER, dayNet: 6, tienTo: `#${i + 1} ` }; });
                 thongBaoHinh = `Chu trình Euler: ${h.vs.map(nhanDinh).join(" → ")}`;
             }
-        } else if (edges.length) {
-            thongBaoHinh = "Không có chu trình Euler";
-            // Đồ thị vô hướng liên thông nhưng có đỉnh bậc lẻ: lặp lại một số cạnh (ngắn nhất) để mọi đỉnh bậc chẵn
-            if (!coHuong() && !loiNguoiDuaThu()) {
-                const start = docXuatPhat(dinhCoCanh()[0], true);
-                if (start === null) { kq = null; return hienThiThongTin(); }
-                const b = tinhNguoiDuaThu(start);
-                if (!b.loi) {
-                    r.bo = b;
-                    toCanhLapNguoiDuaThu(b);
-                    thongBaoHinh = `Không có chu trình Euler. Lặp ${Object.keys(b.dem).length} cạnh (+${b.mG}) thì có: tổng trọng số = ${b.tong}`;
-                }
-            }
-        }
+        } else if (edges.length) thongBaoHinh = "Không có chu trình Euler";
         veDoThi();
         hienThiThongTin();
     }
@@ -133,12 +119,6 @@ function htmlDay(vs, es, moc) {
         } else {
             h += '<div class="euler-no">✖ Đồ thị KHÔNG có chu trình Euler.</div>';
             kq.lyDo.forEach(l => { h += `<div class="euler-reason">• ${l}</div>`; });
-            if (kq.bo) {
-                h += '<div class="euler-yes" style="margin-top:12px">➜ Cách có chu trình Euler: lặp lại một số cạnh đã có</div>';
-                h += `<div class="euler-reason">Ghép các đỉnh bậc lẻ {${kq.bo.le.map(nhanDinh).join(", ")}} thành cặp theo đường đi ngắn nhất rồi nhân đôi các cạnh trên đường đó (m(G) = ${kq.bo.mG}). Khi đó mọi đỉnh có bậc chẵn nên đồ thị mới CÓ chu trình Euler:</div>`;
-                kq.bo.cap.forEach(c => { h += `<div class="npt-path">(${nhanDinh(c.a)}, ${nhanDinh(c.b)}): d = ${c.d}, đường đi ${c.p.map(nhanDinh).join(" → ")}</div>`; });
-                h += htmlHanhTrinhLap(kq.bo);
-            }
         }
         return h + "</div>";
     }
@@ -146,7 +126,7 @@ function htmlDay(vs, es, moc) {
     dangKyChucNang({
         id: "chu-trinh-euler",
         ten: "🔄 Chu trình Euler",
-        mota: "Kiểm tra điều kiện tồn tại và tìm chu trình Euler (đi qua mỗi cạnh đúng 1 lần, quay về đỉnh xuất phát). Nếu chưa có, tự lặp thêm các cạnh ngắn nhất để có.",
+        mota: "Kiểm tra điều kiện tồn tại và tìm chu trình Euler (đi qua mỗi cạnh đúng 1 lần, quay về đỉnh xuất phát).",
         truong: [{ id: "oXuatPhat", nhan: "Đỉnh xuất phát (dùng cho Euler, Người đưa thư, Prim)", placeholder: "Bỏ trống = tự chọn" }],
         nut: [{ nhan: "🔄 Kiểm tra & tìm chu trình Euler", chay, kieu: "success" }],
         html,
