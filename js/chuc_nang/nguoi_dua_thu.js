@@ -11,6 +11,7 @@
 (function () {
     const MAU_LAP = "#16a34a";
     const TOI_DA_LE = 20;
+    const MAU_HIEN_TAI = "#ef4444";   // cạnh đang đi ở bước hiện tại (mô phỏng từng bước)
     let kq = null;
 
     function tinh(start) {
@@ -93,6 +94,47 @@
         hienThiThongTin();
     }
 
+    // ---- Mô phỏng đường đi: bước s = đã đi s lượt đầu của hành trình (kq.es) ----
+    const luotCanh = i => kq.ds[kq.es[i]];                 // lượt đi thứ i (0-based): { x, y, goc, lap }
+    const tongDaDi = s => { let t = 0; for (let i = 0; i < s; i++) t += trongSo(edges[luotCanh(i).goc]); return t; };
+
+    const tb = taoTungBuoc({
+        sanSang: () => !!kq && !kq.loi,
+        chay: () => chay(),
+        tong: () => kq.es.length,
+        ve: s => {
+            const lan = {};                                  // cạnh gốc -> các lượt đã đi (1-based)
+            for (let i = 0; i < s; i++) { const g = luotCanh(i).goc; (lan[g] = lan[g] || []).push(i + 1); }
+            Object.keys(lan).forEach(g => {
+                const dangDi = lan[g].includes(s);
+                toMauCanh[g] = {
+                    mau: dangDi ? MAU_HIEN_TAI : (kq.dem[g] ? MAU_LAP : MAU_EULER),
+                    dayNet: dangDi ? 9 : 6,
+                    tienTo: lan[g].map(t => "#" + t).join(",") + " "
+                };
+            });
+            dinhNoiBat = kq.vs[s];
+            thongBaoHinh = s === 0
+                ? `Người đưa thư: xuất phát tại ${nhanDinh(kq.vs[0])} (bước 0/${kq.es.length})`
+                : `Người đưa thư — bước ${s}/${kq.es.length}: ${nhanDinh(kq.vs[s - 1])} → ${nhanDinh(kq.vs[s])} · đã đi ${tongDaDi(s)}/${kq.tong}`;
+        }
+    });
+
+    function htmlBuoc() {
+        const s = tb.buoc();
+        if (s === null) return "";
+        const T = kq.es.length;
+        let h = `<div class="npt-step"><b>▶ Đang mô phỏng đường đi:</b> bước ${s}/${T}</div>`;
+        if (s === 0) h += `<div class="npt-path">Đang đứng ở đỉnh xuất phát <b>${nhanDinh(kq.vs[0])}</b>. Bấm "Bước tiếp" để đi.</div>`;
+        else {
+            const it = luotCanh(s - 1), e = edges[it.goc];
+            h += `<div class="npt-path">Vừa đi từ <b>${nhanDinh(kq.vs[s - 1])}</b> đến <b>${nhanDinh(kq.vs[s])}</b> theo cạnh ${nhanCanhNgan(it.goc)}`
+                + (e.w !== undefined ? `, w = ${e.w}` : "") + (it.lap ? " — <b>đi lặp lại</b> (cạnh thêm để các đỉnh lẻ thành chẵn)" : "") + ".</div>";
+        }
+        h += `<div class="npt-total">Đã đi: ${tongDaDi(s)} / ${kq.tong}${s === T ? " — đã về đỉnh xuất phát ✔" : ""}</div>`;
+        return h;
+    }
+
     function html() {
         if (!kq) return "";
         let h = '<br><h3>📮 Bài toán người đưa thư</h3><div class="npt-wrap">';
@@ -108,7 +150,8 @@
         }
         h += `<div class="npt-step"><b>Hành trình</b> (xuất phát từ ${nhanDinh(kq.vs[0])}, ${kq.es.length} lượt đi):</div>`;
         const danhDau = i => { const it = kq.ds[kq.es[i]]; const lap = it.lap || false; return `e${it.goc + 1}${lap ? "*" : ""}`; };
-        h += htmlDay(kq.vs, kq.es, danhDau);
+        h += htmlBuoc();
+        h += htmlDay(kq.vs, kq.es, danhDau, tb.buoc() === null ? undefined : tb.buoc());
         h += `<div class="euler-line">${kq.vs.map(nhanDinh).join(" → ")}</div>`;
         h += '<div class="npt-path">Dấu * : lượt đi lặp lại của cạnh.</div>';
         h += `<div class="npt-total">Tổng trọng số hành trình = Σw + m(G) = ${kq.sumW} + ${kq.mG} = ${kq.tong}</div>`;
@@ -119,8 +162,8 @@
         id: "nguoi-dua-thu",
         ten: "📮 Bài toán người đưa thư",
         mota: "Tìm hành trình có tổng trọng số nhỏ nhất đi qua mọi cạnh ít nhất 1 lần và quay về đỉnh xuất phát (đồ thị vô hướng).",
-        nut: [{ nhan: "📮 Giải bài toán người đưa thư", chay, kieu: "success" }],
+        nut: [{ nhan: "📮 Giải bài toán người đưa thư", chay, kieu: "success" }, ...tb.nut],
         html,
-        reset: () => { kq = null; }
+        reset: () => { kq = null; tb.datLai(); }
     });
 })();

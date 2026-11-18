@@ -55,11 +55,11 @@ function docXuatPhat(macDinh, canCoCanh) {
 }
 
 // Dãy đỉnh dạng ô: [A] -e1→ [B] ... ; moc(k) trả về chuỗi nhãn cạnh
-function htmlDay(vs, es, moc) {
+function htmlDay(vs, es, moc, dang) {   // dang (tùy chọn): chỉ số đỉnh đang đứng khi mô phỏng từng bước
     let h = '<div class="euler-seq">';
     vs.forEach((v, i) => {
-        h += `<span class="euler-v">${nhanDinh(v)}</span>`;
-        if (i < es.length) h += `<span class="euler-e">${moc(i)}</span>`;
+        h += `<span class="euler-v${i === dang ? " euler-v-now" : ""}">${nhanDinh(v)}</span>`;
+        if (i < es.length) h += `<span class="euler-e${dang !== undefined && dang !== null && i < dang ? " euler-e-done" : ""}">${moc(i)}</span>`;
     });
     return h + "</div>";
 }

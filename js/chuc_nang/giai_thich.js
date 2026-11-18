@@ -17,7 +17,8 @@
 <div class="giai-line">Nhập &amp; quản lý đồ thị: chọn 1 trong 5 loại, nhập cạnh <code>x y</code> hoặc <code>x y w</code>, thêm/xóa/sửa cạnh, kéo thả đỉnh.</div>
 <div class="giai-line">Chu trình Euler: kiểm tra điều kiện và tìm chu trình.</div>
 <div class="giai-line">Người đưa thư: hành trình ngắn nhất đi qua mọi cạnh.</div>
-<div class="giai-line">Cây khung nhỏ nhất bằng Prim.</div></div>
+<div class="giai-line">Cây khung nhỏ nhất bằng Prim.</div>
+<div class="giai-line">Mô phỏng đường đi từng bước (Người đưa thư, Prim): Bước tiếp / Bước trước / Tự chạy; trang tự cuộn tới hình. Người đưa thư đi dọc hành trình từng cạnh (cạnh đang đi màu đỏ, cạnh đi lặp màu xanh lá); Prim thêm từng cạnh vào cây, hiện các cạnh ứng viên nét đứt.</div></div>
 
 <div class="giai-step"><b>3. Nguyên lý hoạt động</b>
 <div class="giai-line">Đồ thị lưu bằng danh sách cạnh <code>edges = [{x, y, w}]</code> và số đỉnh <code>n</code>. Mỗi khi dữ liệu đổi, <code>veDoThi()</code> vẽ lại SVG và <code>hienThiThongTin()</code> dựng lại khung Thông tin. Mỗi chức năng đọc <code>edges</code>, tính kết quả, rồi tô màu cạnh (<code>toMauCanh</code>) và ghi kết quả ra khung Thông tin.</div></div>
